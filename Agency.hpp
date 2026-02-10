@@ -1,4 +1,7 @@
 #pragma once
+
+// DEPENDENCY: curl
+
 #include <string>
 #include <vector>
 #include <functional>
@@ -6,87 +9,11 @@
 #include <sstream>
 #include <iostream>
 #include <curl/curl.h>
-#include <unordered_map>
+#include <string>
+#include <vector>
+#include "../misc/IniFile.hpp"
 
 using namespace std;
-
-// DEPENDENCY: curl
-
-// Simple INI file parser
-class IniFile {
-public:
-    unordered_map<string, unordered_map<string, string>> data;
-    
-    void load(const string& filename) {
-        ifstream file(filename);
-        if (!file.is_open()) {
-            cerr << "Error: Could not open INI file: " << filename << endl;
-            return;
-        }
-        
-        string section = "";
-        string line;
-        while (getline(file, line)) {
-            // Remove comments
-            size_t commentPos = line.find(';');
-            if (commentPos != string::npos) {
-                line = line.substr(0, commentPos);
-            }
-            
-            // Trim whitespace
-            size_t first = line.find_first_not_of(" \t\r\n");
-            if (first == string::npos) continue;
-            size_t last = line.find_last_not_of(" \t\r\n");
-            line = line.substr(first, last - first + 1);
-            
-            if (line.empty()) continue;
-            
-            // Check for section
-            if (line[0] == '[' && line[line.size() - 1] == ']') {
-                section = line.substr(1, line.size() - 2);
-                continue;
-            }
-            
-            // Parse key=value
-            size_t eqPos = line.find('=');
-            if (eqPos != string::npos) {
-                string key = line.substr(0, eqPos);
-                string value = line.substr(eqPos + 1);
-                
-                // Trim key and value
-                first = key.find_first_not_of(" \t");
-                if (first != string::npos) {
-                    last = key.find_last_not_of(" \t");
-                    key = key.substr(first, last - first + 1);
-                } else {
-                    key = "";
-                }
-                
-                first = value.find_first_not_of(" \t");
-                if (first != string::npos) {
-                    last = value.find_last_not_of(" \t");
-                    value = value.substr(first, last - first + 1);
-                } else {
-                    value = "";
-                }
-                
-                data[section][key] = value;
-            }
-        }
-        file.close();
-    }
-    
-    string get(const string& key, const string& section = "") {
-        return data[section][key];
-    }
-    
-    string get(const string& key, const string& section, const string& defaultValue) {
-        if (data.find(section) != data.end() && data[section].find(key) != data[section].end()) {
-            return data[section][key];
-        }
-        return defaultValue;
-    }
-};
 
 // TODO: OpenAI compatible completion based LLM communication
 class LLM {
@@ -171,7 +98,7 @@ private:
     void loadConfig() {
         IniFile ini;
         ini.load("config.ini");
-        m_apiEndpoint = ini.get("api_endpoint", "llm", "http://localhost:11434/v1/chat/completions");
+        m_apiEndpoint = ini.getopt<string>("api_endpoint", "llm", "http://localhost:11434/v1/chat/completions");
     }
     
     // Build JSON request for OpenAI-compatible API

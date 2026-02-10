@@ -3,6 +3,7 @@
 #ifdef TEST
 
 #include "../../misc/TEST.hpp"
+#include "../../misc/capture_cout_cerr.hpp"
 #include "../Agency.hpp"
 #include <fstream>
 
@@ -42,52 +43,67 @@ TEST(test_LLM_prompt_without_stream) {
     LLM llm;
     llm.setSystemPrompt("You are a helpful assistant.");
     
-    // This test would normally make an actual API call
-    // For a unit test, we would mock the API response
-    // Since we don't have mocking framework, we'll just verify the method exists
-    string response = llm.prompt("Hello");
-    // Response should be non-empty if API call succeeds
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&llm]() {
+        // This test would normally make an actual API call
+        // For a unit test, we would mock the API response
+        // Since we don't have mocking framework, we'll just verify the method exists
+        string response = llm.prompt("Hello");
+        // Response should be non-empty if API call succeeds
+    }, false);
 }
 
 TEST(test_LLM_prompt_with_stream) {
     LLM llm;
     llm.setSystemPrompt("You are a helpful assistant.");
     
-    // This test would normally make an actual streaming API call
-    // For a unit test, we would mock the API response
-    // Use explicit function object to avoid ambiguity
-    struct Callback {
-        string operator()(string chunk) { return chunk; }
-    };
-    string response = llm.prompt("Hello", Callback());
-    // Response should be non-empty if API call succeeds
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&llm]() {
+        // This test would normally make an actual streaming API call
+        // For a unit test, we would mock the API response
+        // Use explicit function object to avoid ambiguity
+        struct Callback {
+            string operator()(string chunk) { return chunk; }
+        };
+        string response = llm.prompt("Hello", Callback());
+        // Response should be non-empty if API call succeeds
+    }, false);
 }
 
 TEST(test_LLM_prompt_empty_system) {
     LLM llm;
     // No system prompt set
     
-    string response = llm.prompt("Hello");
-    // Should still work with empty system prompt
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&llm]() {
+        string response = llm.prompt("Hello");
+        // Should still work with empty system prompt
+    }, false);
 }
 
 TEST(test_LLM_multiple_prompts) {
     LLM llm;
     llm.setSystemPrompt("You are a test assistant.");
     
-    string response1 = llm.prompt("First prompt");
-    string response2 = llm.prompt("Second prompt");
-    
-    // History should accumulate
-    // Note: This test verifies the method exists
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&llm]() {
+        string response1 = llm.prompt("First prompt");
+        string response2 = llm.prompt("Second prompt");
+        
+        // History should accumulate
+        // Note: This test verifies the method exists
+    }, false);
 }
 
 TEST(test_LLM_prompt_with_empty_string) {
     LLM llm;
     llm.setSystemPrompt("You are a test assistant.");
     
-    string response = llm.prompt("");
-    // Should handle empty prompt gracefully
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&llm]() {
+        string response = llm.prompt("");
+        // Should handle empty prompt gracefully
+    }, false);
 }
 
 #endif

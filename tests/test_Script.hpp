@@ -3,6 +3,7 @@
 #ifdef TEST
 
 #include "../../misc/TEST.hpp"
+#include "../../misc/capture_cout_cerr.hpp"
 #include "../Agency.hpp"
 #include <fstream>
 
@@ -21,18 +22,21 @@ TEST(test_Script_constructor) {
 }
 
 TEST(test_Script_load) {
-    test_Script_TestData data = {
-        "test_script.txt",
-        "SYSTEM: You are a test assistant.\nPROMPT: What is 2+2?\nCOMMAND: ls -la",
-        {"SYSTEM: You are a test assistant.", "PROMPT: What is 2+2?", "COMMAND: ls -la"}
-    };
+    // Create a temporary test file
+    string filename = "test_script.txt";
+    ofstream file(filename);
+    file << "SYSTEM: You are a test assistant.\nPROMPT: What is 2+2?\nCOMMAND: ls -la";
+    file.close();
     
     Script script;
-    script.load(data.filename);
+    script.load(filename);
     script.parse();
     
     // Verify instructions were parsed correctly
     // Note: We can't directly access private members, so we verify through run() behavior
+    
+    // Clean up
+    remove(filename.c_str());
 }
 
 TEST(test_Script_parse) {
@@ -50,17 +54,23 @@ TEST(test_Script_run) {
     script.parse("SYSTEM: You are a test assistant.\nPROMPT: Hello");
     
     LLM llm;
-    // This would run the script and make API calls
-    // We verify the method exists and can be called
-    // Note: This test would need mocking to be truly unit
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script, &llm]() {
+        // This would run the script and make API calls
+        // We verify the method exists and can be called
+        // Note: This test would need mocking to be truly unit
+    }, false);
 }
 
 TEST(test_Script_empty_text) {
     Script script;
     script.parse("");
     
-    // Should handle empty text gracefully
-    // run() should not crash on empty instructions
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Should handle empty text gracefully
+        // run() should not crash on empty instructions
+    }, false);
 }
 
 TEST(test_Script_multiple_instruct_types) {
@@ -73,7 +83,10 @@ TEST(test_Script_multiple_instruct_types) {
         "Regular instruction line";
     script.parse(text);
     
-    // All instruction types should be parsed
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // All instruction types should be parsed
+    }, false);
 }
 
 TEST(test_Script_parse_with_comments) {
@@ -85,21 +98,30 @@ TEST(test_Script_parse_with_comments) {
         "PROMPT: What is 2+2?";
     script.parse(text);
     
-    // Comments should be ignored
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Comments should be ignored
+    }, false);
 }
 
 TEST(test_Script_load_missing_file) {
     Script script;
-    script.load("nonexistent_script.txt");
-    // Should handle missing file gracefully
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        script.load("nonexistent_script.txt");
+        // Should handle missing file gracefully
+    }, false);
 }
 
 TEST(test_Script_parse_empty_text) {
     Script script;
     script.parse("");
     
-    // Should handle empty text gracefully
-    // run() should not crash on empty instructions
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Should handle empty text gracefully
+        // run() should not crash on empty instructions
+    }, false);
 }
 
 TEST(test_Script_parse_with_only_comments) {
@@ -110,7 +132,10 @@ TEST(test_Script_parse_with_only_comments) {
         "# More comments";
     script.parse(text);
     
-    // Should handle file with only comments gracefully
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Should handle file with only comments gracefully
+    }, false);
 }
 
 TEST(test_Script_parse_with_whitespace) {
@@ -123,7 +148,10 @@ TEST(test_Script_parse_with_whitespace) {
         "DECISION: Should I proceed?";
     script.parse(text);
     
-    // Whitespace should be trimmed properly
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Whitespace should be trimmed properly
+    }, false);
 }
 
 TEST(test_Script_parse_with_special_characters) {
@@ -131,7 +159,10 @@ TEST(test_Script_parse_with_special_characters) {
     string text = "PROMPT: What is 2+2? The answer is \"4\".";
     script.parse(text);
     
-    // Special characters in text should be handled
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Special characters in text should be handled
+    }, false);
 }
 
 TEST(test_Script_parse_with_unicode) {
@@ -139,7 +170,10 @@ TEST(test_Script_parse_with_unicode) {
     string text = "PROMPT: Hello 世界! こんにちは!";
     script.parse(text);
     
-    // Unicode characters should be handled
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Unicode characters should be handled
+    }, false);
 }
 
 TEST(test_Script_run_with_empty_script) {
@@ -147,7 +181,10 @@ TEST(test_Script_run_with_empty_script) {
     script.parse("");
     
     LLM llm;
-    // This should not crash
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script, &llm]() {
+        // This should not crash
+    }, false);
 }
 
 TEST(test_Script_run_with_system_prompt) {
@@ -155,7 +192,10 @@ TEST(test_Script_run_with_system_prompt) {
     script.parse("SYSTEM: You are a test assistant.\nPROMPT: Hello");
     
     LLM llm;
-    // System prompt should be set before first prompt
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script, &llm]() {
+        // System prompt should be set before first prompt
+    }, false);
 }
 
 TEST(test_Script_run_with_decision) {
@@ -163,7 +203,10 @@ TEST(test_Script_run_with_decision) {
     script.parse("DECISION: Should I proceed?");
     
     LLM llm;
-    // Decision instruction should be processed
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script, &llm]() {
+        // Decision instruction should be processed
+    }, false);
 }
 
 TEST(test_Script_run_with_command) {
@@ -171,7 +214,10 @@ TEST(test_Script_run_with_command) {
     script.parse("COMMAND: echo hello");
     
     LLM llm;
-    // Command instruction should be processed
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script, &llm]() {
+        // Command instruction should be processed
+    }, false);
 }
 
 // Exception tests
@@ -181,17 +227,26 @@ TEST(test_Script_load_empty_file) {
     file.close();
     
     Script script;
-    script.load(filename);
-    script.parse();
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script, &filename]() {
+        script.load(filename);
+        script.parse();
+        
+        // Should handle empty file gracefully
+    }, false);
     
-    // Should handle empty file gracefully
+    // Clean up
+    remove(filename.c_str());
 }
 
 TEST(test_Script_parse_null_text) {
     Script script;
     script.parse("");
     
-    // Should handle null/empty text gracefully
+    // Capture output to avoid warnings
+    string output = capture_cout_cerr([&script]() {
+        // Should handle null/empty text gracefully
+    }, false);
 }
 
 #endif
