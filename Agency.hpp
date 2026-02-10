@@ -97,8 +97,8 @@ private:
     // Load configuration from INI file
     void loadConfig() {
         IniFile ini;
-        ini.load("config.ini");
-        m_apiEndpoint = ini.getopt<string>("api_endpoint", "llm", "http://localhost:11434/v1/chat/completions");
+        ini.load(string("config.ini"));
+        m_apiEndpoint = ini.getopt<string>("api_endpoint", "http://localhost:11434/v1/chat/completions", "llm");
     }
     
     // Build JSON request for OpenAI-compatible API
